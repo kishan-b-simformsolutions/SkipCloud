@@ -1,0 +1,103 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function self(userId) {
+      return signedIn() && request.auth.uid == userId;
+    }
+
+    function currentUserDoc() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+
+    function currentUserProfileExists() {
+      return signedIn() && exists(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+
+    function currentOrgId() {
+      return currentUserDoc().data.orgId;
+    }
+
+    function sameOrg(orgId) {
+      return currentUserProfileExists() && orgId == currentOrgId();
+    }
+
+    function currentUserIsAdmin() {
+      return currentUserProfileExists() && currentUserDoc().data.role == "admin";
+    }
+
+    match /users/{userId} {
+      allow read: if self(userId) || (resource != null && sameOrg(resource.data.orgId));
+
+      allow create: if (
+          self(userId)
+          && request.resource.data.id == request.auth.uid
+          && request.resource.data.role in ["admin", "user"]
+        )
+        || (
+          currentUserIsAdmin()
+          && request.resource.data.id == userId
+          && request.resource.data.orgId == currentOrgId()
+          && request.resource.data.role == "user"
+        )
+        && request.resource.data.email is string
+        && request.resource.data.orgId is string;
+
+      allow update: if self(userId)
+        || (currentUserIsAdmin() && resource.data.orgId == currentOrgId());
+
+      allow delete: if false;
+    }
+
+    match /organizations/{orgId} {
+      allow read: if resource != null && sameOrg(resource.data.id);
+
+      allow create: if signedIn()
+        && request.resource.data.adminId == request.auth.uid
+        && request.resource.data.id == orgId;
+
+      allow update: if currentUserIsAdmin() && resource.data.id == currentOrgId();
+      allow delete: if false;
+    }
+
+    match /conversationRequests/{requestId} {
+      allow read: if resource != null && sameOrg(resource.data.orgId);
+
+      allow create: if signedIn()
+        && request.resource.data.orgId is string
+        && sameOrg(request.resource.data.orgId)
+        && request.resource.data.fromUserId == request.auth.uid;
+
+      allow update: if resource != null
+        && sameOrg(resource.data.orgId)
+        && (
+          resource.data.fromUserId == request.auth.uid
+          || resource.data.toUserId == request.auth.uid
+          || currentUserIsAdmin()
+        );
+
+      allow delete: if false;
+    }
+
+    match /signals/{signalId} {
+      allow read: if resource != null
+        && resource.data.toUserId == request.auth.uid;
+
+      allow create: if signedIn()
+        && request.resource.data.fromUserId == request.auth.uid
+        && request.resource.data.toUserId is string
+        && request.resource.data.type in ["offer", "answer", "ice"];
+
+      allow delete: if resource != null
+        && (
+          resource.data.toUserId == request.auth.uid
+          || resource.data.fromUserId == request.auth.uid
+        );
+
+      allow update: if false;
+    }
+  }
+}

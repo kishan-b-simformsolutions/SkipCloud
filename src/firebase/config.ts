@@ -1,0 +1,50 @@
+import { FirebaseApp, FirebaseOptions, getApp, getApps, initializeApp } from "firebase/app";
+import { getAnalytics, isSupported } from "firebase/analytics";
+import { getAuth } from "firebase/auth";
+import { getDatabase } from "firebase/database";
+import { getFirestore } from "firebase/firestore";
+
+const firebaseConfig: FirebaseOptions = {
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "AIzaSyCHUrO-uEE_3vmAEEGa-wJbLRkGGaRQv5Q",
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || "skipcloud-70db6.firebaseapp.com",
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "skipcloud-70db6",
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || "skipcloud-70db6.firebasestorage.app",
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "728744910503",
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || "1:728744910503:web:69184e4b9aecff1619c582",
+  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID || "G-DMBPVW54E5",
+  databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL || "https://skipcloud-70db6-default-rtdb.firebaseio.com",
+};
+
+function ensureConfig() {
+  const missing = Object.entries(firebaseConfig)
+    .filter(([, value]) => !value)
+    .map(([key]) => key);
+
+  if (missing.length > 0) {
+    throw new Error(`Missing Firebase environment variables: ${missing.join(", ")}`);
+  }
+}
+
+export function getFirebaseApp(): FirebaseApp {
+  ensureConfig();
+  return getApps().length ? getApp() : initializeApp(firebaseConfig);
+}
+
+export function getSecondaryFirebaseApp(name: string) {
+  ensureConfig();
+  return initializeApp(firebaseConfig, name);
+}
+
+export const app = getFirebaseApp();
+export const auth = getAuth(app);
+export const db = getFirestore(app);
+export const realtimeDb = getDatabase(app);
+
+export async function getFirebaseAnalyticsInstance() {
+  if (typeof globalThis.window === "undefined") {
+    return null;
+  }
+
+  const supported = await isSupported().catch(() => false);
+  return supported ? getAnalytics(app) : null;
+}
