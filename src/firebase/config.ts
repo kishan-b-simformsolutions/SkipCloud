@@ -5,14 +5,14 @@ import { getDatabase } from "firebase/database";
 import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig: FirebaseOptions = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "AIzaSyCHUrO-uEE_3vmAEEGa-wJbLRkGGaRQv5Q",
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || "skipcloud-70db6.firebaseapp.com",
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "skipcloud-70db6",
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || "skipcloud-70db6.firebasestorage.app",
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "728744910503",
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || "1:728744910503:web:69184e4b9aecff1619c582",
-  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID || "G-DMBPVW54E5",
-  databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL || "https://skipcloud-70db6-default-rtdb.firebaseio.com",
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY ,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN ,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID ,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET ,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID ,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID ,
+  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
+  databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL ,
 };
 
 function ensureConfig() {
